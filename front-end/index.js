@@ -9,39 +9,34 @@ app.use(express.urlencoded({extended: true}));
 app.use(express.json());   
 
 app.get('/', function (req, res) {
-    res.sendFile(path.join(__dirname+'/index.html'));
+    // Load file index.html
+    res.sendFile(path.join(__dirname + '/index.html'));
   })
+
+app.get('/toast-done', function (req, res) {
+  res.send('YOUR TOAST IS DONE');
+})
 
 app.post('/submit-form', (req, res) => {
     const seconds = req.body.timer
     const topping = req.body.topping
-
     axios.post('http://localhost:5000/toast-handler', {
       time: seconds,
       topping
     })
     .then(response => { 
-      time = response.data.time || null;
-      topping = response.data.topping || null;
-      if (time) {
-        console.log(time);
+      let time = response.data.toast.time || null;
+      let top = response.data.toast.topping || null;
+      
+      if (!time || !top){
+        res.redirect('back');
       }
-      else {
-        console.log("Please add time");
-      }
-      if (topping) {
-        console.log(`Topping ${topping} was added to your toast`);
-      }
-      else {
-        console.log("Your toast does not have a topping");
-      }
-      res.end()
+      res.redirect(`/toast-done?toastQuality=${quality}&topping=${top}`);
     })
     .catch(error => {
-        console.log(error.response)
-        res.end()
+      console.log('ERROR: ' + error)
     });
-
+    
   })
 
   app.listen(port, () => console.log(`Example app listening on port ${port}!`))
